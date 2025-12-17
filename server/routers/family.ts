@@ -8,7 +8,7 @@ import {
 } from "../_core/authorization";
 import {
   getDb,
-  getFamilyDependentsByFamilyId,
+  getDependentsByFamilyId, // <- Corrigir de getFamilyDependentsByFamilyId para getDependentsByFamilyId
 } from "../db";
 import { familyDependents, InsertFamilyDependent } from "../../drizzle/schema";
 
@@ -38,7 +38,7 @@ export const familyRouter = router({
         });
       }
 
-      const dependents = await getFamilyDependentsByFamilyId(input.familyId as number);
+      const dependents = await getDependentsByFamilyId(input.familyId as number);
       return dependents.map((d) => ({
         id: d.id,
         name: d.name,
@@ -107,7 +107,7 @@ export const familyRouter = router({
       const result = await db.insert(familyDependents).values(newDependent);
       const dependentId = result[0].insertId as number;
 
-      const dependents = await getFamilyDependentsByFamilyId(input.familyId);
+      const dependents = await getDependentsByFamilyId(input.familyId);
       const created = dependents.find((d) => d.id === dependentId);
 
       if (!created) {
