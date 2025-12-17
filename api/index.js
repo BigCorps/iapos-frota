@@ -1,3 +1,1 @@
-import handler from '../dist/index.js';
-
-export default handler;
+export { default } from '../dist/index.js';
