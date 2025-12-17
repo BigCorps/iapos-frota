@@ -1,9 +1,7 @@
 # IAPOS - Gestão de Frotas e Rede de Postos
-
 Uma plataforma web completa para gestão de abastecimento de combustível que conecta postos, empresas com frotas e famílias através de um sistema unificado de pagamento e controle.
 
 ## 🚀 Características Principais
-
 - **Autenticação Multi-Nível**: 4 tipos de usuários com controle de acesso granular (RBAC)
 - **Gestão de Postos**: Cadastro e gerenciamento hierárquico de redes de postos
 - **Gestão de Frotas**: Controle de veículos, motoristas e saldo
