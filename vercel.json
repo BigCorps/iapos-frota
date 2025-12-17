@@ -1,15 +1,8 @@
 {
   "version": 2,
+  "framework": null,
   "buildCommand": "pnpm run build",
-  "outputDirectory": "dist/public",
-  "rewrites": [
-    {
-      "source": "/api/trpc/(.*)",
-      "destination": "/api"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "devCommand": "pnpm run dev",
+  "installCommand": "pnpm install",
+  "outputDirectory": "dist/public"
 }
