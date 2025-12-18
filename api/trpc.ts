@@ -1,4 +1,4 @@
-// api/trpc.ts - Simplified Vercel Serverless Function
+// api/trpc.ts - Vercel Serverless Function for tRPC
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { appRouter } from '../server/routers';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
@@ -29,10 +29,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       endpoint: '/api/trpc',
       req: fetchReq,
       router: appRouter,
-      createContext: () => ({
-        req: req as any,
-        res: res as any,
-      }),
+      createContext: async () => {
+        // Context com user null (adicione lógica de auth aqui se necessário)
+        return {
+          req: req as any,
+          res: res as any,
+          user: null, // TODO: Implementar autenticação via cookie/header
+        };
+      },
     });
 
     // Set response status

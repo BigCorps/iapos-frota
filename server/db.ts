@@ -36,10 +36,14 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   try {
     const values: InsertUser = {
       openId: user.openId,
+      // Campos obrigatórios com valores padrão
+      accountType: user.accountType || "family",
+      role: user.role || "dependent",
     };
     const updateSet: Record<string, unknown> = {};
 
-    const textFields = ["name", "email", "loginMethod"] as const;
+    // Campos de texto opcionais
+    const textFields = ["name", "email"] as const;
     type TextField = (typeof textFields)[number];
 
     const assignNullable = (field: TextField) => {
@@ -59,6 +63,10 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     if (user.role !== undefined) {
       values.role = user.role;
       updateSet.role = user.role;
+    }
+    if (user.accountType !== undefined) {
+      values.accountType = user.accountType;
+      updateSet.accountType = user.accountType;
     }
 
     if (!values.lastSignedIn) {

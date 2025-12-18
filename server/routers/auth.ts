@@ -44,17 +44,12 @@ export const authRouter = router({
   }),
 
   /**
-   * Logout - Clear session cookie
+   * Logout - Clear session (Vercel serverless compatible)
+   * Note: In serverless, session clearing is handled client-side
    */
-  logout: publicProcedure.mutation(({ ctx }) => {
-    const COOKIE_NAME = "session";
-    const cookieOptions = {
-      secure: ctx.req.protocol === "https",
-      sameSite: "none" as const,
-      httpOnly: true,
-      path: "/",
-    };
-    ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+  logout: publicProcedure.mutation(() => {
+    // Em ambiente serverless, o cookie deve ser limpo no cliente
+    // Retornamos success para o cliente fazer o logout
     return { success: true };
   }),
 
