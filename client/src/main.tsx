@@ -8,22 +8,67 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 
-// Build timestamp to force new hash
-const BUILD_ID = "v3.0.1";
+// ============================================
+// CONFIGURATION - FORCED REBUILD v4.0.0
+// ============================================
 
-const queryClient = new QueryClient();
+const FORCE_REBUILD = true; // This line forces new hash
+const BUILD_VERSION = "4.0.0-final";
 
-const redirectToLoginIfUnauthorized = (error: unknown) => {
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
+
+/**
+ * Get the correct base URL for API calls
+ * Works in browser, SSR, and local development
+ */
+function getBaseUrl(): string {
+  // Browser environment - use current origin
+  if (typeof window !== "undefined") {
+    console.log("[tRPC Config] Using browser origin:", window.location.origin);
+    return window.location.origin;
+  }
+  
+  // Vercel deployment - use VERCEL_URL
+  if (process.env.VERCEL_URL) {
+    const url = `https://${process.env.VERCEL_URL}`;
+    console.log("[tRPC Config] Using Vercel URL:", url);
+    return url;
+  }
+  
+  // Local development fallback
+  console.log("[tRPC Config] Using localhost");
+  return "http://localhost:5000";
+}
+
+/**
+ * Redirect to login if unauthorized
+ */
+function redirectToLoginIfUnauthorized(error: unknown): void {
   if (!(error instanceof TRPCClientError)) return;
   if (typeof window === "undefined") return;
 
   const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
-
   if (!isUnauthorized) return;
 
   window.location.href = getLoginUrl();
-};
+}
 
+// ============================================
+// QUERY CLIENT SETUP
+// ============================================
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+// Subscribe to query errors
 queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
@@ -32,6 +77,7 @@ queryClient.getQueryCache().subscribe(event => {
   }
 });
 
+// Subscribe to mutation errors
 queryClient.getMutationCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.mutation.state.error;
@@ -40,24 +86,17 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
-// Função para obter a URL base correta
-function getBaseUrl() {
-  // No navegador, usa a origem atual
-  if (typeof window !== "undefined") {
-    return window.location.origin;
-  }
-  // No build/SSR, tenta usar VERCEL_URL
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  // Fallback para desenvolvimento local
-  return "http://localhost:5000";
-}
+// ============================================
+// TRPC CLIENT SETUP
+// ============================================
+
+const apiUrl = `${getBaseUrl()}/api/trpc`;
+console.log("[tRPC Config] API URL:", apiUrl);
 
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: `${getBaseUrl()}/api/trpc`,
+      url: apiUrl,
       transformer: superjson,
       fetch(input, init) {
         return globalThis.fetch(input, {
@@ -69,7 +108,18 @@ const trpcClient = trpc.createClient({
   ],
 });
 
-createRoot(document.getElementById("root")!).render(
+// ============================================
+// RENDER APP
+// ============================================
+
+console.log(`[App] Starting IAPOS v${BUILD_VERSION}`);
+
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
+
+createRoot(rootElement).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
       <App />
