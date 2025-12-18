@@ -9,7 +9,7 @@ import { getLoginUrl } from "./const";
 import "./index.css";
 
 // Build timestamp to force new hash
-const BUILD_ID = "v2.0.0";
+const BUILD_ID = "v3.0.1";
 
 const queryClient = new QueryClient();
 
