@@ -11,11 +11,14 @@ type UseAuthOptions = {
 export function useAuth(options?: UseAuthOptions) {
   const { redirectOnUnauthenticated = false, redirectPath = getLoginUrl() } =
     options ?? {};
+  
   const utils = trpc.useUtils();
 
+  // TEMPORARY: Disable the query to test if page loads
   const meQuery = trpc.auth.me.useQuery(undefined, {
     retry: false,
     refetchOnWindowFocus: false,
+    enabled: false, // DISABLED TEMPORARILY
   });
 
   const logoutMutation = trpc.auth.logout.useMutation({
@@ -42,23 +45,14 @@ export function useAuth(options?: UseAuthOptions) {
   }, [logoutMutation, utils]);
 
   const state = useMemo(() => {
-    localStorage.setItem(
-      "manus-runtime-user-info",
-      JSON.stringify(meQuery.data)
-    );
+    // TEMPORARY: Return mock data
     return {
-      user: meQuery.data ?? null,
-      loading: meQuery.isLoading || logoutMutation.isPending,
-      error: meQuery.error ?? logoutMutation.error ?? null,
-      isAuthenticated: Boolean(meQuery.data),
+      user: null,
+      loading: false,
+      error: null,
+      isAuthenticated: false,
     };
-  }, [
-    meQuery.data,
-    meQuery.error,
-    meQuery.isLoading,
-    logoutMutation.error,
-    logoutMutation.isPending,
-  ]);
+  }, []);
 
   useEffect(() => {
     if (!redirectOnUnauthenticated) return;
@@ -67,7 +61,8 @@ export function useAuth(options?: UseAuthOptions) {
     if (typeof window === "undefined") return;
     if (window.location.pathname === redirectPath) return;
 
-    window.location.href = redirectPath
+    // TEMPORARY: Don't redirect
+    // window.location.href = redirectPath
   }, [
     redirectOnUnauthenticated,
     redirectPath,
