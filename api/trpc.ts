@@ -1,7 +1,8 @@
-// api/trpc.ts - Vercel Serverless Function for tRPC
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
-import { appRouter } from '../server/routers';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+// CRITICAL FIX: Import the specific file, not directory
+import { appRouter } from '../server/routers.ts';
 
 export const config = {
   runtime: 'nodejs',
@@ -10,12 +11,10 @@ export const config = {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    // Build full URL for fetch handler
     const protocol = req.headers['x-forwarded-proto'] || 'https';
     const host = req.headers.host;
     const url = `${protocol}://${host}${req.url}`;
     
-    // Convert Vercel request to Fetch API Request
     const fetchReq = new Request(url, {
       method: req.method || 'GET',
       headers: req.headers as HeadersInit,
@@ -24,30 +23,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         : undefined,
     });
 
-    // Handle with tRPC fetch adapter
     const response = await fetchRequestHandler({
       endpoint: '/api/trpc',
       req: fetchReq,
       router: appRouter,
-      createContext: async () => {
-        // Context com user null (adicione lógica de auth aqui se necessário)
-        return {
-          req: req as any,
-          res: res as any,
-          user: null, // TODO: Implementar autenticação via cookie/header
-        };
-      },
+      createContext: async () => ({
+        req: req as any,
+        res: res as any,
+        user: null,
+      }),
     });
 
-    // Set response status
     res.status(response.status);
-
-    // Copy headers from fetch response to Vercel response
     response.headers.forEach((value, key) => {
       res.setHeader(key, value);
     });
-
-    // Send response body
+    
     const text = await response.text();
     res.send(text);
   } catch (error) {
