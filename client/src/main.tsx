@@ -37,10 +37,24 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+// Função para obter a URL base correta
+function getBaseUrl() {
+  // No navegador, usa a origem atual
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+  // No build/SSR, tenta usar VERCEL_URL
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  // Fallback para desenvolvimento local
+  return "http://localhost:5000";
+}
+
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: `${getBaseUrl()}/api/trpc`,
       transformer: superjson,
       fetch(input, init) {
         return globalThis.fetch(input, {
